@@ -1,0 +1,43 @@
+name: Delete CloudFormation - S3 Bucket
+
+on:
+  workflow_dispatch:
+    inputs:
+      bucket_name:
+        required: true
+        type: string
+        description: bucket name
+      port_payload:
+        required: true
+        description:
+          Port's payload, including details for who triggered the action and
+          general context (blueprint, run id, etc...)
+        type: string
+
+jobs:
+  delete-cloudformation-stack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials 🔒
+        id: aws-credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Delete AWS CloudFormation Stack
+        uses: aws-actions/aws-cloudformation-github-delete-stack@v1
+        with:
+          name: ${{ inputs.bucket_name }}
+
+      - name: Remove S3 Bucket Entity from Port
+        uses: port-labs/port-github-action@v1
+        with:
+          identifier: ${{ inputs.bucket_name }}
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          operation: DELETE
+          runId: ${{ fromJson(inputs.port_payload).context.runId }}
