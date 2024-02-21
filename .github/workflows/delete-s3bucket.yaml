@@ -1,4 +1,4 @@
-name: Delete CloudFormation - S3 Bucket
+name: Deploy CloudFormation - S3 Bucket Delete
 
 on:
   workflow_dispatch:
@@ -15,7 +15,7 @@ on:
         type: string
 
 jobs:
-  delete-cloudformation-stack:
+  deploy-cloudformation-template:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -28,16 +28,29 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Delete AWS CloudFormation Stack
-        uses: aws-actions/aws-cloudformation-github-delete-stack@v1
+      - name: Deploy to AWS CloudFormation
+        uses: aws-actions/aws-cloudformation-github-deploy@v1
         with:
           name: ${{ inputs.bucket_name }}
+          template: s3delete.yaml
+          parameter-overrides: >-
+            BucketName=${{ inputs.bucket_name }},
 
-      - name: Remove S3 Bucket Entity from Port
+      - name: UPSERT S3 Bucket Entity in Port
         uses: port-labs/port-github-action@v1
         with:
           identifier: ${{ inputs.bucket_name }}
+          title: ${{ inputs.bucket_name }}
+          team: "[]"
+          icon: S3
+          blueprint: s3_bucket
+          properties: |-
+            {
+              "bucket_name": "${{ inputs.bucket_name }}",
+              "bucket_acl": "${{ inputs.bucket_acl }}"
+            }
+          relations: "{}"
           clientId: ${{ secrets.PORT_CLIENT_ID }}
           clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
           operation: DELETE
-          runId: ${{ fromJson(inputs.port_payload).context.runId }}
+          runId: ${{fromJson(inputs.port_payload).context.runId}}
