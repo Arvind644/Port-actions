@@ -33,5 +33,7 @@ jobs:
         uses: port-labs/port-github-action@v1
         with:
           identifier: ${{ inputs.bucket_name }}
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
           operation: DELETE
           runId: ${{fromJson(inputs.port_payload).context.runId}}
