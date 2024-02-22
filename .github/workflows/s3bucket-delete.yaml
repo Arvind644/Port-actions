@@ -29,15 +29,6 @@ jobs:
       - name: Delete S3 Bucket
         run: aws s3 rb s3://${{ inputs.bucket_name }} --force
 
-      # - name: Delete S3 Bucket Entity in Port
-      #   uses: port-labs/port-github-action@v1
-      #   with:
-      #     identifier: ${{ inputs.bucket_name }}
-      #     clientId: ${{ secrets.PORT_CLIENT_ID }}
-      #     clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
-      #     operation: DELETE
-      #     runId: ${{fromJson(inputs.port_payload).context.runId}}
-
       - name: Delete S3 Bucket Entity in Port
         uses: port-labs/port-github-action@v1
         with:
