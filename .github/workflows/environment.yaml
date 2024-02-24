@@ -39,7 +39,7 @@ jobs:
           template: s3.yaml
           parameter-overrides: >-
             BucketName=${{ env.RANDOM_BUCKET_NAME }},
-            BucketAcl=private
+            BucketAcl=Private
 
       - name: UPSERT S3 Bucket Entity in Port
         uses: port-labs/port-github-action@v1
