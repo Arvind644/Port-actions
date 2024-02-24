@@ -1,0 +1,58 @@
+name: Deploy CloudFormation - S3 Bucket
+
+on:
+  workflow_dispatch:
+    inputs:
+      port_payload:
+        required: true
+        description:
+          Port's payload, including details for who triggered the action and
+          general context (blueprint, run id, etc...)
+        type: string
+
+jobs:
+  deploy-cloudformation-template:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Generate Random S3 Bucket Name
+        id: random-bucket-name
+        run: echo "S3Bucket$RANDOM" >> $GITHUB_ENV
+      # Generate random bucket name and store it in environment variable
+
+      - name: Configure AWS Credentials 🔒
+        id: aws-credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy to AWS CloudFormation
+        uses: aws-actions/aws-cloudformation-github-deploy@v1
+        with:
+          name: ${{ env.RANDOM_BUCKET_NAME }}
+          template: s3.yaml
+          parameter-overrides: >-
+            BucketName=${{ env.RANDOM_BUCKET_NAME }},
+            BucketAcl=private
+
+      - name: UPSERT S3 Bucket Entity in Port
+        uses: port-labs/port-github-action@v1
+        with:
+          identifier: ${{ env.RANDOM_BUCKET_NAME }}
+          title: ${{ env.RANDOM_BUCKET_NAME }}
+          team: "[]"
+          icon: S3
+          blueprint: s3_bucket
+          properties: |-
+            {
+              "bucket_name": "${{ env.RANDOM_BUCKET_NAME }}",
+              "bucket_acl": "private"
+            }
+          relations: "{}"
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          operation: UPSERT
+          runId: ${{fromJson(inputs.port_payload).context.runId}}
