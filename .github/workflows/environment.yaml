@@ -19,9 +19,10 @@ jobs:
       - name: Generate Random S3 Bucket Name
         id: random-bucket-name
         run: |
-          RANDOM_BUCKET_NAME="S3Bucket$(date +%s | sha256sum | base64 | head -c 8)"
+          RANDOM_BUCKET_NAME=$(date +%s | sha256sum | base64 | head -c 8 | tr '[:upper:]' '[:lower:]')
           echo "RANDOM_BUCKET_NAME=$RANDOM_BUCKET_NAME" >> $GITHUB_ENV
           echo "Generated Random Bucket Name: $RANDOM_BUCKET_NAME"
+
       # Generate random bucket name and store it in environment variable
 
       - name: Configure AWS Credentials 🔒
