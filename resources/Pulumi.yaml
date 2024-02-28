@@ -1,6 +1,6 @@
-name: blueprints
+name: port-pulumi-webinar
 runtime:
   name: python
   options:
     virtualenv: venv
-description: A minimal Python Pulumi program
+description: A pulumi project to manage AWS resources and ingest them to Port
